@@ -1,10 +1,8 @@
 # Address Space Simulator
 
-A C program that simulates virtual address translation using single-level and two-level page tables in a Unix environment.
-
 ## Overview
 
-This program analyzes memory address spaces and performs virtual-to-physical address translation based on different page table configurations. It supports both single-level linear page tables and two-level tree-structured page tables.
+This project implements a C program that simulates virtual address translation using single-level and two-level page tables in a Unix environment. The program analyzes memory address spaces and performs virtual-to-physical address translation based on different page table configurations.
 
 ## Features
 
@@ -20,13 +18,15 @@ This program analyzes memory address spaces and performs virtual-to-physical add
 - C compiler (gcc recommended)
 - Standard C libraries: `stdio.h`, `stdlib.h`, `math.h`
 
-## Compilation
+## Installation & Usage
+
+### 1. Compilation
 
 ```bash
 gcc -o address_space address_space.c -lm
 ```
 
-## Usage
+### 2. Usage
 
 ```bash
 ./address_space <page_table_type> <address_bits> <page_size_KB>
@@ -40,7 +40,7 @@ gcc -o address_space address_space.c -lm
 - `address_bits`: Total bits in virtual address (8-63)
 - `page_size_KB`: Page size in kilobytes (1, 2, 4, 8, 16, 32, 64, 128, 256, 512)
 
-### Examples
+### 3. Examples
 
 ```bash
 # Two-level page table with 32-bit addresses and 8KB pages
@@ -50,22 +50,7 @@ gcc -o address_space address_space.c -lm
 ./address_space 1 16 4
 ```
 
-## Program Output
-
-### Initial Configuration Output
-- Memory size (in appropriate units: B, KB, MB, GB)
-- Total number of pages
-- Total number of page table entries (PTEs)
-- Page table size in bytes
-- Number of bits for VPN and page offset
-- For two-level tables: PTE count per page, page counts, directory and table index bits
-
-### Interactive Address Translation
-- Prompts for decimal virtual addresses
-- Outputs VPN, page offset, and indices in decimal and binary formats
-- Validates addresses against memory bounds
-
-## Sample Session
+### 4. Sample Output
 
 ```
 $ ./address_space 2 32 8
@@ -92,22 +77,92 @@ page directory index in binary: 01001001
 page table index in binary: 10010110000
 ```
 
+## Implementation Details
+
+### Program Structure
+
+The program consists of two main components:
+
+1. **Configuration Analysis**: Processes command-line arguments and calculates memory layout
+2. **Interactive Translation**: Prompts for virtual addresses and displays translation results
+
+### Key Functions
+
+- `print_memory_size()`: Displays memory size in appropriate units (B, KB, MB, GB)
+- `print_binary()`: Outputs binary representation with leading zeros
+- `is_power_of_two()`: Validates page size argument
+- `log2_int()`: Calculates base-2 logarithm for bit calculations
+
+### Address Translation Process
+
+1. **Input Validation**: Checks argument consistency and ranges
+2. **Memory Layout Calculation**: Determines VPN bits, offset bits, and page counts
+3. **Two-Level Structure**: For type 2, calculates directory and table indices
+4. **Interactive Loop**: Processes user input addresses and displays translations
+
+## Technical Details
+
+### Memory Calculations
+
+- **Total Memory**: `2^address_bits` bytes
+- **Page Size**: `page_size_KB * 1024` bytes
+- **Offset Bits**: `log2(page_size_bytes)`
+- **VPN Bits**: `address_bits - offset_bits`
+- **Total Pages**: `2^vpn_bits`
+
+### Two-Level Page Table Structure
+
+- **PTEs per Page**: `page_size_bytes / PTE_SIZE` (where PTE_SIZE = 4 bytes)
+- **Page Table Index Bits**: `log2(ptes_per_page)`
+- **Page Directory Index Bits**: `vpn_bits - pt_bits`
+- **Pages in Page Table**: `2^pd_bits`
+
+### Binary Format Display
+
+All binary outputs include leading zeros to maintain proper bit width representation, ensuring accurate visualization of the address structure.
+
 ## Error Handling
 
 The program validates:
+
 - Command line argument ranges and consistency
 - Page size as power of two within valid range
 - Virtual addresses within memory bounds
 - Proper page table configuration feasibility
 
-## Implementation Details
+Error messages provide clear explanations for invalid inputs:
 
-- Uses bit manipulation for address decomposition
-- Supports large address spaces (up to 63-bit addresses)
-- Efficient binary representation with leading zeros
-- Comprehensive input validation with descriptive error messages
+```
+Error: address space is too small for the specified page size.
+Error: address exceeds memory bounds of 1024 bytes.
+```
 
-## Files
+## Files Included
 
 - `address_space.c` - Main program implementation
 - `address_space_improved.c` - Alternative implementation
+- `a5.pdf` - Assignment specification document
+
+## Limitations
+
+- Maximum address space limited to 63 bits
+- Page sizes restricted to specific power-of-two values (1-512 KB)
+- Single PTE size fixed at 4 bytes
+- No support for physical address translation or TLB simulation
+
+## Testing
+
+Test the implementation by:
+
+1. Running with various valid argument combinations
+2. Testing boundary cases (minimum/maximum address bits)
+3. Verifying error handling with invalid inputs
+4. Comparing binary outputs with manual calculations
+5. Testing both single-level and two-level page table configurations
+
+## Notes
+
+- The implementation follows the exact specification from the assignment document
+- All calculations use unsigned 64-bit integers to handle large address spaces
+- Binary output formatting ensures proper alignment and readability
+- The program maintains interactive operation until user terminates input
